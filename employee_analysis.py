@@ -1,70 +1,66 @@
 # employee_analysis.py
 # Author: 24f2004315@ds.study.iitm.ac.in
-# Python script to load dataset, count R&D employees, and create a histogram
 
 import pandas as pd
 import matplotlib.pyplot as plt
-import base64
 from io import BytesIO
+import base64
+import inspect
 
-# ------------------------------
-# 1. Load the employee dataset
-# ------------------------------
-
-# Example CSV path — replace with the correct CSV file location
-# Ensure your CSV has columns: EmployeeID, Name, Department, Region, etc.
+# ----------------------
+# Load dataset
+# ----------------------
 df = pd.read_csv("employees.csv")
 
-# ------------------------------
-# 2. Calculate frequency count for "R&D" department
-# ------------------------------
-
+# Count R&D employees
 rd_count = (df["Department"] == "R&D").sum()
+print("Employees in R&D:", rd_count)
 
-print("Number of employees in R&D:", rd_count)
-
-# ------------------------------
-# 3. Create histogram of department distribution
-# ------------------------------
-
+# ----------------------
+# Create histogram
+# ----------------------
 plt.figure(figsize=(8, 5))
 df["Department"].value_counts().plot(kind="bar", color="skyblue")
-plt.title("Department Distribution Histogram")
+plt.title("Department Distribution")
 plt.xlabel("Department")
 plt.ylabel("Count")
 
-# Save plot to buffer
+# Convert plot to Base64 image
 buf = BytesIO()
 plt.savefig(buf, format="png")
 buf.seek(0)
+img64 = base64.b64encode(buf.read()).decode("utf-8")
 
-# Convert to base64 for embedding inside HTML
-encoded = base64.b64encode(buf.read()).decode("utf-8")
+# ----------------------
+# Get Python source code
+# ----------------------
+python_code = inspect.getsource(inspect.getmodule(inspect.currentframe()))
 
-# ------------------------------
-# 4. Save everything in an HTML file
-# ------------------------------
-
-html_content = f"""
+# ----------------------
+# Generate HTML
+# ----------------------
+html = f"""
 <html>
-<head>
-<title>Employee Analysis</title>
-</head>
 <body>
-<h1>Employee Department Analysis</h1>
+<h1>Employee Visualization</h1>
 <p><b>Author:</b> 24f2004315@ds.study.iitm.ac.in</p>
 
-<h2>Frequency Count for R&D Department</h2>
-<p>Number of employees in R&D: <b>{rd_count}</b></p>
+<h2>R&D Department Count</h2>
+<p><b>{rd_count}</b> employees work in R&D.</p>
 
-<h2>Department Distribution Histogram</h2>
-<img src="data:image/png;base64,{encoded}" alt="Histogram">
+<h2>Department Histogram</h2>
+<img src="data:image/png;base64,{img64}">
+
+<h2>Python Code Used</h2>
+<pre><code>
+{python_code}
+</code></pre>
 
 </body>
 </html>
 """
 
 with open("employee_analysis.html", "w") as f:
-    f.write(html_content)
+    f.write(html)
 
-print("HTML file 'employee_analysis.html' successfully created!")
+print("employee_analysis.html successfully created with embedded Python code!")
